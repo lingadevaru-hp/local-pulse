@@ -39,11 +39,11 @@ export default function RootLayout({
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       appearance={{
       variables: { 
-        colorPrimary: 'hsl(210 100% 50%)', // Apple Blue
-        colorBackground: 'hsl(0 0% 98%)', // Light theme background
-        colorText: 'hsl(240 10% 3.9%)', // Light theme foreground
-        colorInputBackground: 'hsl(210 20% 90%)', // Light theme input background
-        colorInputText: 'hsl(240 10% 3.9%)', // Light theme input text
+        colorPrimary: 'hsl(210, 100%, 50%)', // Apple Blue, corrected HSL format
+        colorBackground: 'hsl(0, 0%, 98%)', // Light theme background, corrected HSL format
+        colorText: 'hsl(240, 10%, 3.9%)', // Light theme foreground, corrected HSL format
+        colorInputBackground: 'hsl(210, 20%, 90%)', // Light theme input background, corrected HSL format
+        colorInputText: 'hsl(240, 10%, 3.9%)', // Light theme input text, corrected HSL format
         borderRadius: '0.75rem', // Uses the value of --radius from globals.css (12px)
       },
       elements: { // Further customization to match ShadCN/Apple style
