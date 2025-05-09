@@ -10,25 +10,25 @@ import { Button } from './ui/button';
 import { MapPin, WifiOff } from 'lucide-react';
 
 const mockNearbyEventsData: Event[] = [
-    { id: 'nearby1', name: 'Local Market Fair', description: 'Fresh produce and local crafts.', city: 'Bengaluru', date: '2025-07-15', time: '10:00', location: 'Nearby Market', category: 'Community', imageUrl: 'https://picsum.photos/seed/localmarket/400/225', rating: 4.2 },
-    { id: 'nearby2', name: 'Street Food Carnival', description: 'Taste the best street food in town.', city: 'Bengaluru', date: '2025-07-16', time: '14:00', location: 'Nearby Street', category: 'Food', imageUrl: 'https://picsum.photos/seed/streetfood/400/225', rating: 4.5 },
-    { id: 'nearby3', name: 'Evening Park Yoga', description: 'Relax and rejuvenate with an outdoor yoga session.', city: 'Bengaluru', date: '2025-07-17', time: '18:00', location: 'Community Park', category: 'Wellness', imageUrl: 'https://picsum.photos/seed/parkyoga/400/225', rating: 4.0 },
+    { id: 'nearby1', name: 'Local Market Fair', description: 'Fresh produce and local crafts.', city: 'Bengaluru', date: '2025-07-15', time: '10:00', location: 'Nearby Market', category: 'Community', imageUrl: 'https://picsum.photos/seed/localmarket/400/225', rating: 4.2, price: "Free", ageGroup: "All Ages", mapUrl:"#", registrationLink: "#", comments: [] },
+    { id: 'nearby2', name: 'Street Food Carnival', description: 'Taste the best street food in town.', city: 'Bengaluru', date: '2025-07-16', time: '14:00', location: 'Nearby Street', category: 'Food', imageUrl: 'https://picsum.photos/seed/streetfood/400/225', rating: 4.5, price: "₹100", ageGroup: "All Ages", mapUrl:"#", registrationLink: "#", comments: [] },
+    { id: 'nearby3', name: 'Evening Park Yoga', description: 'Relax and rejuvenate with an outdoor yoga session.', city: 'Bengaluru', date: '2025-07-17', time: '18:00', location: 'Community Park', category: 'Wellness', imageUrl: 'https://picsum.photos/seed/parkyoga/400/225', rating: 4.0, price: "Free", ageGroup: "All Ages", mapUrl:"#", registrationLink: "#", comments: [] },
 ];
 
+interface NearbyEventsSectionProps {
+  onEventClick: (eventId: string) => void;
+}
 
-const NearbyEventsSection: FC = () => {
+const NearbyEventsSection: FC<NearbyEventsSectionProps> = ({ onEventClick }) => {
   const [locationState, setLocationState] = useState<'prompt' | 'detecting' | 'detected' | 'denied' | 'error' | 'notsupported'>('prompt');
   const [nearbyEvents, setNearbyEvents] = useState<Event[]>([]);
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
 
 
   const fetchNearbyEvents = async (latitude: number, longitude: number) => {
-    // In a real app, you would fetch events from your backend based on coordinates
-    // For now, we use mock data.
     console.log(`Fetching events near: Lat: ${latitude}, Lon: ${longitude}`);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500)); 
-    setNearbyEvents(mockNearbyEventsData); // Using predefined mock data
+    setNearbyEvents(mockNearbyEventsData);
     setLocationState('detected');
   };
 
@@ -55,21 +55,17 @@ const NearbyEventsSection: FC = () => {
     );
   };
   
-  // Attempt to detect location on component mount if permission was previously granted or is auto-granted
   useEffect(() => {
-    // Check if permission was already granted or can be queried without prompt
-    if (navigator.geolocation && typeof navigator.permissions?.query === 'function') {
+    if (typeof window !== 'undefined' && navigator.geolocation && typeof navigator.permissions?.query === 'function') {
       navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
         if (permissionStatus.state === 'granted') {
           handleDetectLocation();
-        } else if (permissionStatus.state === 'prompt') {
-          // User will be prompted if they click the button.
-          // Or, you could auto-prompt here, but it's often better UX to let user initiate.
-          // For this iteration, we'll wait for button click if 'prompt'.
         } else if (permissionStatus.state === 'denied') {
           setLocationState('denied');
         }
       });
+    } else if (typeof window !== 'undefined' && !navigator.geolocation) {
+        setLocationState('notsupported');
     }
   }, []);
 
@@ -125,7 +121,7 @@ const NearbyEventsSection: FC = () => {
         }
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {nearbyEvents.map(event => <EventCard key={event.id} event={event} />)}
+            {nearbyEvents.map(event => <EventCard key={event.id} event={event} onClick={onEventClick} />)}
           </div>
         );
       default:

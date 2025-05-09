@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 interface EventCardProps {
   event: Event;
-  onClick?: (eventId: string) => void; // Optional: For handling click at parent level
+  onClick: (eventId: string) => void;
 }
 
 const EventCard: FC<EventCardProps> = ({ event, onClick }) => {
@@ -24,9 +24,7 @@ const EventCard: FC<EventCardProps> = ({ event, onClick }) => {
   else if (event.name.toLowerCase().includes('literature festival')) aiHint = "books festival";
 
   const handleCardClick = () => {
-    if (onClick) {
-      onClick(event.id);
-    }
+    onClick(event.id);
   };
 
   return (
@@ -36,10 +34,11 @@ const EventCard: FC<EventCardProps> = ({ event, onClick }) => {
         "glass-effect", 
         "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col"
       )}
-      onClick={handleCardClick} // Added onClick to the main div
-      role="button" // Added role for accessibility
-      tabIndex={0} // Make it focusable
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }} // Keyboard accessibility
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+      aria-label={`View details for ${event.name}`}
     >
       <div className="relative w-full aspect-[16/9] overflow-hidden">
         <Image
@@ -108,11 +107,15 @@ const EventCard: FC<EventCardProps> = ({ event, onClick }) => {
             className="w-full sm:w-auto rounded-full bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-1.5 h-auto"
             onClick={(e) => {
               e.stopPropagation(); 
-              // Placeholder action for direct registration, or could open details too
-              if (onClick) onClick(event.id); else alert(`Registering for ${event.name}`); 
+              if (event.registrationLink) {
+                window.open(event.registrationLink, '_blank');
+              } else {
+                onClick(event.id); // Fallback to opening details page if no direct registration link
+              }
             }}
+            aria-label={`Register for ${event.name}`}
         >
-          Register
+          {event.registrationLink ? 'Register' : 'Details'}
         </Button>
       </div>
     </div>

@@ -10,7 +10,7 @@ import { Ghost } from 'lucide-react';
 interface EventListProps {
   events: Event[];
   isLoading: boolean;
-  onEventClick?: (eventId: string) => void;
+  onEventClick: (eventId: string) => void;
 }
 
 const EventList: FC<EventListProps> = ({ events, isLoading, onEventClick }) => {

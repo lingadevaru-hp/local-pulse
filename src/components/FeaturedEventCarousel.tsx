@@ -9,13 +9,9 @@ import type { Event } from '@/types';
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Using the allMockEvents from page.tsx for consistency
-// If this component needs its own distinct featured list, define it here.
-// For now, we'll assume it receives events as a prop.
-
 interface FeaturedEventCarouselProps {
   events: Event[];
-  onEventClick?: (eventId: string) => void;
+  onEventClick: (eventId: string) => void;
 }
 
 const FeaturedEventCarousel: FC<FeaturedEventCarouselProps> = ({ events, onEventClick }) => {
@@ -56,12 +52,7 @@ const FeaturedEventCarousel: FC<FeaturedEventCarouselProps> = ({ events, onEvent
   const aiHint = `${currentEvent.category || 'event'} ${currentEvent.city || 'city'}`.toLowerCase();
 
   const handleLearnMoreClick = () => {
-    if (onEventClick) {
-      onEventClick(currentEvent.id);
-    } else {
-      // Fallback or default behavior if no onEventClick is provided
-      alert(`Learn more about ${currentEvent.name}`);
-    }
+    onEventClick(currentEvent.id);
   };
 
   return (

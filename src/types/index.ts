@@ -1,5 +1,4 @@
 
-
 export interface Comment {
   id: string;
   userName: string;
@@ -21,11 +20,11 @@ export interface Event {
   imageUrl?: string;
   rating?: number;
   organizer?: string;
-  price?: string; // e.g., "Free", "₹500", "₹200-₹1000"
-  ageGroup?: string; // e.g., "All Ages", "18+", "21 and Above"
-  mapUrl?: string; // Google Maps embed URL
-  registrationLink?: string; // Link to registration page
-  comments?: Comment[]; // Array of comments
+  price?: string; 
+  ageGroup?: string; 
+  mapUrl?: string; 
+  registrationLink?: string;
+  comments?: Comment[];
 }
 
 export interface City {
