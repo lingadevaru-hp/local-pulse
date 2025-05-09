@@ -39,22 +39,22 @@ export default function RootLayout({
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       appearance={{
       variables: { 
-        colorPrimary: 'hsl(210, 100%, 50%)', // Apple Blue, corrected HSL format
-        colorBackground: 'hsl(0, 0%, 98%)', // Light theme background, corrected HSL format
-        colorText: 'hsl(240, 10%, 3.9%)', // Light theme foreground, corrected HSL format
-        colorInputBackground: 'hsl(210, 20%, 90%)', // Light theme input background, corrected HSL format
-        colorInputText: 'hsl(240, 10%, 3.9%)', // Light theme input text, corrected HSL format
+        colorPrimary: 'hsl(210 100% 50%)', // Apple Blue
+        colorBackground: 'hsl(0 0% 98%)', // Light theme background
+        colorText: 'hsl(240 10% 3.9%)', // Light theme foreground
+        colorInputBackground: 'hsl(210 20% 90%)', // Light theme input background
+        colorInputText: 'hsl(240 10% 3.9%)', // Light theme input text
         borderRadius: '0.75rem', // Uses the value of --radius from globals.css (12px)
       },
-      elements: { // Further customization to match ShadCN/Apple style
-        card: 'bg-card text-card-foreground border-border shadow-xl rounded-2xl', // More rounded like Apple modals
+      elements: { 
+        card: 'bg-card text-card-foreground border-border shadow-xl rounded-2xl', 
         formButtonPrimary:
           'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring',
         socialButtonsBlockButton:
           'border-border hover:bg-muted/50',
         dividerLine: 'bg-border',
         formFieldInput:
-          'bg-input border-border focus:ring-ring focus:border-ring rounded-lg', // More rounded inputs
+          'bg-input border-border focus:ring-ring focus:border-ring rounded-lg', 
         footerActionLink:
           'text-primary hover:text-primary/80',
       }
