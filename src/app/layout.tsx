@@ -6,7 +6,6 @@ import ThemeProvider from '@/components/ThemeProvider';
 import AppHeader from '@/components/AppHeader';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 
 
 export const metadata: Metadata = {
@@ -38,7 +37,7 @@ export default function RootLayout({
   return (
     <ClerkProvider appearance={{
       baseTheme: undefined, // Will use system theme by default from ThemeProvider
-      darkTheme: dark,
+      // darkTheme: dark, // Removed as @clerk/themes is not installed
       variables: { 
         colorPrimary: 'hsl(var(--primary))',
         colorBackground: 'hsl(var(--background))',
