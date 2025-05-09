@@ -3,7 +3,7 @@
 import type { FC } from 'react';
 import ThemeToggle from './ThemeToggle';
 import Link from 'next/link';
-import { Home, UserCircle, LayoutDashboard, Settings, PlusCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { Home, UserCircle, LayoutDashboard, Settings, PlusCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ const mainNavItems: NavItem[] = [
 
 const AppHeader: FC = () => {
   const pathname = usePathname();
-  const { openSignIn, openSignUp } = useClerk();
+  const { openSignIn } = useClerk(); // openSignUp is not needed if openSignIn provides path to sign up
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b">
@@ -53,14 +53,6 @@ const AppHeader: FC = () => {
               </Link>
             );
           })}
-            <SignedIn>
-                {/* UserButton will show avatar and manage profile/sign out */}
-            </SignedIn>
-            <SignedOut>
-                 {/* The Sign In/Up button that was here has been removed as per user request. 
-                     The Sign In and Sign Up buttons in the "Right: Action Buttons & Toggles" section remain. 
-                 */}
-            </SignedOut>
         </nav>
 
         {/* Right: Action Buttons & Toggles */}
@@ -77,6 +69,10 @@ const AppHeader: FC = () => {
              <Button variant="default" size="sm" className="hidden sm:inline-flex rounded-full px-3 py-1 text-sm" onClick={() => openSignIn()}>
                 Sign In / Sign Up
              </Button>
+             {/* Mobile Sign In/Up Button - Icon Only */}
+             <Button variant="ghost" size="icon" className="sm:hidden rounded-full w-9 h-9" onClick={() => openSignIn()} aria-label="Sign In or Sign Up">
+                <UserCircle className="h-5 w-5" />
+             </Button>
           </SignedOut>
           
           <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 sm:w-10 sm:h-10" aria-label="Settings">
@@ -90,3 +86,4 @@ const AppHeader: FC = () => {
 };
 
 export default AppHeader;
+

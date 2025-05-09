@@ -19,8 +19,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#007AFF' }, 
-    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A0A' }, // Corrected dark theme color
+    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' }, // Updated to use HSL var
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },  // Updated to use HSL var
   ],
   width: 'device-width',
   initialScale: 1,
@@ -36,14 +36,15 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider appearance={{
-      baseTheme: undefined, // Will use system theme by default from ThemeProvider
-      // darkTheme: dark, // Removed as @clerk/themes is not installed
+      // Let Clerk auto-detect theme based on system/ThemeProvider
+      // baseTheme: undefined, // Default behavior
       variables: { 
         colorPrimary: 'hsl(var(--primary))',
         colorBackground: 'hsl(var(--background))',
         colorText: 'hsl(var(--foreground))',
         colorInputBackground: 'hsl(var(--input))',
         colorInputText: 'hsl(var(--foreground))',
+        borderRadius: 'var(--radius)',
       }
     }}>
       <html lang="en" suppressHydrationWarning>
@@ -68,3 +69,4 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
+
