@@ -3,13 +3,15 @@
 
 import type { FC } from 'react';
 import Link from 'next/link';
-import { Home, Search, UserCircle, LayoutDashboard } from 'lucide-react';
+import { Home, Search, UserCircle, LayoutDashboard, Bell } from 'lucide-react'; // Added Bell for consistency if needed later
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search }, // Assuming a /search page might exist
+  { href: '/search', label: 'Search', icon: Search }, 
+  // Example: If notifications were to be added here too. For now, it's in AppHeader.
+  // { href: '/notifications', label: 'Notifications', icon: Bell },
   { href: '/profile', label: 'Profile', icon: UserCircle },
   { href: '/organizer', label: 'Dashboard', icon: LayoutDashboard },
 ];
@@ -42,3 +44,4 @@ const BottomNav: FC = () => {
 };
 
 export default BottomNav;
+

@@ -3,15 +3,17 @@
 
 import type { FC } from 'react';
 import Link from 'next/link';
-import { Home, Search, UserCircle, LayoutDashboard, Settings } from 'lucide-react';
+import { Home, Search, UserCircle, LayoutDashboard, Settings, Bell } from 'lucide-react'; // Added Bell for consistency if needed later
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
-const navItems = [
+const mainNavItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/profile', label: 'Profile', icon: UserCircle },
   { href: '/organizer', label: 'Dashboard', icon: LayoutDashboard },
+  // Example: If notifications were to be added here too. For now, it's in AppHeader.
+  // { href: '/notifications', label: 'Notifications', icon: Bell },
 ];
 
 const DesktopSidebar: FC = () => {
@@ -20,7 +22,7 @@ const DesktopSidebar: FC = () => {
   return (
     <aside className="hidden md:flex flex-col w-64 min-h-screen bg-background/80 dark:bg-zinc-900/80 backdrop-blur-md border-r border-border/50 p-4 space-y-4 sticky top-0 left-0 z-30 overflow-y-auto">
       <nav className="flex-grow space-y-2 pt-16"> {/* pt-16 to account for sticky header */}
-        {navItems.map((item) => {
+        {mainNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -39,7 +41,7 @@ const DesktopSidebar: FC = () => {
           );
         })}
       </nav>
-      {/* Example settings link at bottom */}
+      {/* Settings link at bottom */}
       <div className="mt-auto">
          <Link
             href="/settings"
@@ -57,3 +59,4 @@ const DesktopSidebar: FC = () => {
 };
 
 export default DesktopSidebar;
+
