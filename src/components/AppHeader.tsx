@@ -74,11 +74,8 @@ const AppHeader: FC = () => {
             </Button>
           </SignedIn>
           <SignedOut>
-             <Button variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full px-3 py-1 text-sm" onClick={() => openSignIn()}>
-                Sign In
-             </Button>
-             <Button variant="outline" size="sm" className="hidden sm:inline-flex rounded-full px-3 py-1 text-sm" onClick={() => openSignUp()}>
-                Sign Up
+             <Button variant="default" size="sm" className="hidden sm:inline-flex rounded-full px-3 py-1 text-sm" onClick={() => openSignIn()}>
+                Sign In / Sign Up
              </Button>
           </SignedOut>
           
