@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,9 +63,12 @@ export default {
   			}
   		},
   		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			lg: 'var(--radius)', // e.g., 12px if --radius is 0.75rem
+  			md: 'calc(var(--radius) - 4px)', // e.g., 8px
+  			sm: 'calc(var(--radius) - 6px)', // e.g., 6px
+        xl: 'calc(var(--radius) + 4px)', // e.g., 16px if --radius is 0.75rem (12px)
+        '2xl': 'calc(var(--radius) + 8px)', // e.g., 20px if --radius is 0.75rem (12px) -> use rounded-[16px] for specific 16px
+        '3xl': 'calc(var(--radius) + 16px)', // e.g. 28px
   		},
   		keyframes: {
   			'accordion-down': {
@@ -87,8 +91,16 @@ export default {
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
-  		}
+  		},
+      backdropBlur: { // Ensure backdrop blur variants are available
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
+      }
   	}
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
