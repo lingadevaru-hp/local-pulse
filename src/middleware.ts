@@ -3,7 +3,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
-  '/', // Home page
+  '/', // Home page is public
   '/sign-in(.*)', // Clerk sign-in routes
   '/sign-up(.*)', // Clerk sign-up routes
   '/api/(.*)', // Allow public API routes (adjust if needed)
@@ -11,27 +11,32 @@ const isPublicRoute = createRouteMatcher([
   '/sw.js',
   '/icons/(.*)',
   '/favicon.ico',
+  // Add any other specific public pages like /about, /contact, /terms, /privacy if they exist as separate pages
+  // '/about', 
+  // '/contact',
+  // '/terms',
+  // '/privacy',
 ]);
 
-// Define protected routes that require authentication
+// Example of explicitly protecting routes.
+// By default, all routes not listed in isPublicRoute are protected.
 // const isProtectedRoute = createRouteMatcher([
-//   '/dashboard(.*)',
 //   '/profile(.*)',
+//   '/organizer(.*)',
 //   '/events/create(.*)', 
-//   // Add other routes that need protection
 // ]);
 
 export default clerkMiddleware((auth, req) => {
   if (isPublicRoute(req)) {
-    return; // Allow access to public routes
+    return; // Allow access to public routes without authentication
   }
-
-  // For any other route, require authentication
+  
+  // For any other route not listed in isPublicRoute, require authentication.
   auth().protect();
 
-  // Example for specifically protecting routes if needed:
+  // If you had specific protected routes defined and wanted different logic:
   // if (isProtectedRoute(req)) {
-  //   auth().protect();
+  //   auth().protect(); 
   // }
 });
 

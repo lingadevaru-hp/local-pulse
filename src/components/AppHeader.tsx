@@ -14,17 +14,18 @@ interface NavItem {
   label: string;
   icon: FC<React.SVGProps<SVGSVGElement>>;
   ariaLabel: string;
+  protected?: boolean; // To indicate if the link itself should be hidden or shown based on auth state
 }
 
 const mainNavItems: NavItem[] = [
   { href: '/', label: 'Home', icon: Home, ariaLabel: 'Go to Home page' },
-  { href: '/profile', label: 'Profile', icon: UserCircle, ariaLabel: 'Go to Profile page' },
-  { href: '/organizer', label: 'Dashboard', icon: LayoutDashboard, ariaLabel: 'Go to Organizer Dashboard' },
+  { href: '/profile', label: 'Profile', icon: UserCircle, ariaLabel: 'Go to Profile page', protected: true },
+  { href: '/organizer', label: 'Dashboard', icon: LayoutDashboard, ariaLabel: 'Go to Organizer Dashboard', protected: true },
 ];
 
 const AppHeader: FC = () => {
   const pathname = usePathname();
-  const { openSignIn } = useClerk(); // openSignUp is not needed if openSignIn provides path to sign up
+  const { openSignIn } = useClerk();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b">
@@ -38,6 +39,24 @@ const AppHeader: FC = () => {
         <nav className="flex-grow flex justify-center items-center space-x-1 sm:space-x-2">
           {mainNavItems.map((item) => {
             const isActive = pathname === item.href;
+            if (item.protected) {
+              return (
+                <SignedIn key={item.label}>
+                  <Link href={item.href} passHref legacyBehavior>
+                    <a
+                      aria-label={item.ariaLabel}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-2 rounded-xl w-20 h-16 transition-all text-xs sm:text-sm",
+                        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5 sm:h-6 sm:w-6 mb-0.5", isActive ? "text-primary" : "")} />
+                      <span className="font-medium">{item.label}</span>
+                    </a>
+                  </Link>
+                </SignedIn>
+              );
+            }
             return (
               <Link key={item.label} href={item.href} passHref legacyBehavior>
                 <a
@@ -58,24 +77,44 @@ const AppHeader: FC = () => {
         {/* Right: Action Buttons & Toggles */}
         <div className="flex items-center space-x-1 sm:space-x-2">
           <SignedIn>
-            <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: "w-9 h-9 sm:w-10 sm:h-10"}}} />
-            <Button variant="default" size="sm" className="rounded-full px-3 py-1 text-sm" asChild>
-                <Link href="/events/create">
+             {/* UserButton will show avatar and provide sign out, manage account etc. */}
+            <UserButton 
+              afterSignOutUrl="/" 
+              appearance={{ 
+                elements: { 
+                  userButtonAvatarBox: "w-9 h-9 sm:w-10 sm:h-10 shadow-md",
+                  userButtonPopoverCard: "glass-effect", // Apply glass effect to popover
+                }
+              }} 
+            />
+            <Button variant="default" size="sm" className="rounded-full px-3 py-1 text-sm shadow-md" asChild>
+                <Link href="/events/create"> {/* This route will be protected by middleware */}
                 <PlusCircle className="h-4 w-4 mr-1 sm:mr-1.5" /> Create
                 </Link>
             </Button>
           </SignedIn>
           <SignedOut>
-             <Button variant="default" size="sm" className="hidden sm:inline-flex rounded-full px-3 py-1 text-sm" onClick={() => openSignIn()}>
-                Sign In / Sign Up
+             <Button 
+                variant="default" 
+                size="sm" 
+                className="rounded-full px-3 py-1.5 text-sm shadow-md hidden sm:inline-flex" 
+                onClick={() => openSignIn()}
+              >
+                Sign In / Up
              </Button>
              {/* Mobile Sign In/Up Button - Icon Only */}
-             <Button variant="ghost" size="icon" className="sm:hidden rounded-full w-9 h-9" onClick={() => openSignIn()} aria-label="Sign In or Sign Up">
+             <Button 
+                variant="ghost" 
+                size="icon" 
+                className="sm:hidden rounded-full w-9 h-9 shadow" 
+                onClick={() => openSignIn()} 
+                aria-label="Sign In or Sign Up"
+              >
                 <UserCircle className="h-5 w-5" />
              </Button>
           </SignedOut>
           
-          <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 sm:w-10 sm:h-10" aria-label="Settings">
+          <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 sm:w-10 sm:h-10 shadow-sm" aria-label="Settings">
             <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <ThemeToggle />

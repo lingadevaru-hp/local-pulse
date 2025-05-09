@@ -44,7 +44,19 @@ export default function RootLayout({
         colorText: 'hsl(var(--foreground))',
         colorInputBackground: 'hsl(var(--input))',
         colorInputText: 'hsl(var(--foreground))',
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--radius)', // Uses the --radius from globals.css
+      },
+      elements: { // Further customization to match ShadCN/Apple style
+        card: 'bg-card text-card-foreground border-border shadow-xl rounded-2xl', // More rounded like Apple modals
+        formButtonPrimary:
+          'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring',
+        socialButtonsBlockButton:
+          'border-border hover:bg-muted/50',
+        dividerLine: 'bg-border',
+        formFieldInput:
+          'bg-input border-border focus:ring-ring focus:border-ring rounded-lg', // More rounded inputs
+        footerActionLink:
+          'text-primary hover:text-primary/80',
       }
     }}>
       <html lang="en" suppressHydrationWarning>
@@ -69,3 +81,4 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
+
