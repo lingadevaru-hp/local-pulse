@@ -39,12 +39,12 @@ export default function RootLayout({
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       appearance={{
       variables: { 
-        colorPrimary: 'hsl(var(--primary))',
-        colorBackground: 'hsl(var(--background))',
-        colorText: 'hsl(var(--foreground))',
-        colorInputBackground: 'hsl(var(--input))',
-        colorInputText: 'hsl(var(--foreground))',
-        borderRadius: 'var(--radius)', // Uses the --radius from globals.css
+        colorPrimary: 'hsl(210 100% 50%)', // Apple Blue
+        colorBackground: 'hsl(0 0% 98%)', // Light theme background
+        colorText: 'hsl(240 10% 3.9%)', // Light theme foreground
+        colorInputBackground: 'hsl(210 20% 90%)', // Light theme input background
+        colorInputText: 'hsl(240 10% 3.9%)', // Light theme input text
+        borderRadius: '0.75rem', // Uses the value of --radius from globals.css (12px)
       },
       elements: { // Further customization to match ShadCN/Apple style
         card: 'bg-card text-card-foreground border-border shadow-xl rounded-2xl', // More rounded like Apple modals
