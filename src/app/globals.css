@@ -34,16 +34,6 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.75rem; /* Increased default radius for more rounded elements e.g. 12px, can use 1rem for 16px */
 
-    /* Sidebar vars for consistency (Kept from original, may need adjustment if sidebar is fully implemented) */
-    --sidebar-background: 0 0% 96%;
-    --sidebar-foreground: 240 10% 3.9%;
-    --sidebar-primary: 210 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 90%;
-    --sidebar-accent-foreground: 240 10% 3.9%;
-    --sidebar-border: 210 20% 85%;
-    --sidebar-ring: 210 100% 50%;
-
     /* Glassmorphism specific properties */
     --glass-bg-light: hsla(0, 0%, 100%, 0.6); /* Light mode glass background */
     --glass-bg-dark: hsla(220, 15%, 15%, 0.6); /* Dark mode glass background */
@@ -76,15 +66,6 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    /* Sidebar vars for consistency */
-    --sidebar-background: 220 15% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 210 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 22%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 220 15% 25%;
-    --sidebar-ring: 210 100% 50%;
   }
 }
 
@@ -111,8 +92,21 @@ body {
 
 /* Glassmorphic card style utility */
 .glass-card {
-  @apply bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md border border-white/30 dark:border-zinc-700/30 shadow-xl;
+  @apply bg-card/60 dark:bg-card/40 backdrop-blur-md border border-white/30 dark:border-zinc-700/30 shadow-xl;
+  /* Ensure background color is using HSL variables if possible, or a suitable opacity */
+  /* Example: bg-[hsl(var(--card))]/60 dark:bg-[hsl(var(--card))]/40 */
 }
+/* More refined glass card styling */
+.glass-card {
+    background-color: var(--glass-bg-light);
+    border: 1px solid var(--glass-border-light);
+    @apply backdrop-blur-md shadow-xl rounded-2xl; /* Ensure rounded corners from design */
+}
+.dark .glass-card {
+    background-color: var(--glass-bg-dark);
+    border: 1px solid var(--glass-border-dark);
+}
+
 
 /* Custom scrollbar styling (optional, for a more polished look) */
 ::-webkit-scrollbar {

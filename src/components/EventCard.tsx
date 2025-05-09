@@ -10,24 +10,32 @@ interface EventCardProps {
 }
 
 const EventCard: FC<EventCardProps> = ({ event }) => {
+  // Determine AI hint based on event category or name
+  let aiHint = `${event.category} event placeholder`;
+  if (event.name.toLowerCase().includes('mysuru dasara')) aiHint = "mysore palace";
+  else if (event.name.toLowerCase().includes('karaga')) aiHint = "karaga festival";
+  else if (event.name.toLowerCase().includes('mangalore') && event.name.toLowerCase().includes('food')) aiHint = "coastal food";
+  else if (event.name.toLowerCase().includes('kannada folk')) aiHint = "folk music";
+
+
   return (
     <div className="group glass-card rounded-2xl overflow-hidden transition-all duration-300 ease-in-out hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
       <div className="relative w-full aspect-[16/9] overflow-hidden">
         <Image
-          src={event.imageUrl || `https://picsum.photos/seed/${event.id}/600/338`} // Adjusted height for 16:9
+          src={event.imageUrl || `https://picsum.photos/seed/${event.id}/600/338`}
           alt={event.name}
-          fill // Changed from layout="fill" to fill for Next 13+
+          fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
-          data-ai-hint={`${event.category} event placeholder`}
+          data-ai-hint={aiHint}
         />
       </div>
       <div className="p-4 md:p-5 space-y-3">
         <h3 className="text-lg md:text-xl font-semibold leading-tight text-foreground truncate" title={event.name}>
           {event.name}
         </h3>
-        <p className="text-xs text-muted-foreground line-clamp-2 h-[2.5em]"> {/* Fixed height for 2 lines */}
+        <p className="text-xs text-muted-foreground line-clamp-2 h-[2.5em]">
           {event.description}
         </p>
         
@@ -69,4 +77,3 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
 };
 
 export default EventCard;
-

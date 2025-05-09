@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import type { City } from '@/types';
 import { MapPin } from 'lucide-react';
+import { Label } from '@/components/ui/label'; // Import Label
 
 interface CitySelectorProps {
   cities: City[];
@@ -22,24 +23,24 @@ interface CitySelectorProps {
 const CitySelector: FC<CitySelectorProps> = ({ cities, selectedCity, onCityChange, disabled }) => {
   return (
     <div className="space-y-2">
-      <label htmlFor="city-select" className="text-sm font-medium text-muted-foreground flex items-center">
+      <Label htmlFor="city-select" className="text-muted-foreground flex items-center">
         <MapPin className="mr-2 h-4 w-4" />
-        Or Select a City
-      </label>
+        Select City
+      </Label>
       <Select
+        name="city-select" // Added name for better accessibility/forms
         value={selectedCity || ""}
         onValueChange={onCityChange}
         disabled={disabled}
-        name="city-select" // Added name for better accessibility/forms
       >
         <SelectTrigger 
           id="city-select" 
-          className="w-full h-12 md:w-auto md:min-w-[280px] bg-white/70 dark:bg-black/30 backdrop-blur-sm border-gray-300/50 dark:border-gray-700/50 rounded-xl shadow-sm text-base"
+          className="w-full h-12 bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50 rounded-xl shadow-sm text-base"
           aria-label="Select a city"
         >
-          <SelectValue placeholder="Choose a city..." />
+          <SelectValue placeholder="Choose a city in Karnataka..." />
         </SelectTrigger>
-        <SelectContent className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md rounded-lg">
+        <SelectContent className="bg-popover/80 dark:bg-popover/80 backdrop-blur-md rounded-lg">
           {cities.map((city) => (
             <SelectItem key={city.id} value={city.id} className="cursor-pointer hover:bg-accent/10">
               {city.name}
@@ -52,4 +53,3 @@ const CitySelector: FC<CitySelectorProps> = ({ cities, selectedCity, onCityChang
 };
 
 export default CitySelector;
-
