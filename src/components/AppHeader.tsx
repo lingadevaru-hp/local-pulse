@@ -57,15 +57,9 @@ const AppHeader: FC = () => {
                 {/* UserButton will show avatar and manage profile/sign out */}
             </SignedIn>
             <SignedOut>
-                 <Button
-                    variant="ghost"
-                    onClick={() => openSignIn()}
-                    aria-label="Sign In or Sign Up"
-                    className="flex flex-col items-center justify-center p-2 rounded-xl w-20 h-16 transition-all text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  >
-                    <LogIn className="h-5 w-5 sm:h-6 sm:w-6 mb-0.5" />
-                    <span className="font-medium">Sign In/Up</span>
-                  </Button>
+                 {/* The Sign In/Up button that was here has been removed as per user request. 
+                     The Sign In and Sign Up buttons in the "Right: Action Buttons & Toggles" section remain. 
+                 */}
             </SignedOut>
         </nav>
 
