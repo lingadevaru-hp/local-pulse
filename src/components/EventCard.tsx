@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Event } from '@/types';
 import { CalendarDays, MapPin, Tag, UserCircle, Star as StarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'; // Import Button
 
 interface EventCardProps {
   event: Event;
@@ -19,13 +20,14 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
   else if (event.name.toLowerCase().includes('tech summit')) aiHint = "tech conference";
   else if (event.name.toLowerCase().includes('cricket')) aiHint = "cricket stadium";
   else if (event.name.toLowerCase().includes('art exhibition')) aiHint = "art gallery";
+  else if (event.name.toLowerCase().includes('literature festival')) aiHint = "books festival";
 
 
   return (
     <div className={cn(
       "group rounded-2xl overflow-hidden transition-all duration-300 ease-in-out",
-      "glass-effect", // Apply the global glass effect style
-      "hover:shadow-2xl hover:scale-[1.03] active:scale-[0.99] cursor-pointer"
+      "glass-effect", 
+      "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col" // ensure flex column for button at bottom
     )}>
       <div className="relative w-full aspect-[16/9] overflow-hidden">
         <Image
@@ -38,7 +40,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
           data-ai-hint={aiHint}
         />
       </div>
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex-grow"> {/* flex-grow to push footer down */}
         <h3 className="text-md md:text-lg font-semibold leading-tight text-foreground truncate" title={event.name}>
           {event.name}
         </h3>
@@ -58,34 +60,47 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
           {event.organizer && (
             <div className="flex items-center text-muted-foreground">
               <UserCircle className="mr-1.5 h-3 w-3.5" />
-              <span>Organized by: {event.organizer}</span>
+              <span>By: {event.organizer}</span>
             </div>
           )}
         </div>
       </div>
-      <div className="p-4 border-t border-[var(--glass-border-light)] dark:border-[var(--glass-border-dark)] flex justify-between items-center">
-         <Badge 
-            variant="outline" 
-            className={cn(
-                "py-1 px-2.5 rounded-lg text-xs border-primary/30 text-primary",
-                "bg-primary/10 dark:bg-primary/20" // ensure some background for better visibility on glass
+      <div className="p-4 border-t border-[var(--glass-border-light)] dark:border-[var(--glass-border-dark)] flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div className="flex items-center justify-between w-full sm:w-auto">
+            <Badge 
+                variant="outline" 
+                className={cn(
+                    "py-1 px-2.5 rounded-lg text-xs border-primary/30 text-primary",
+                    "bg-primary/10 dark:bg-primary/20"
+                )}
+            >
+            <Tag className="mr-1 h-3 w-3" />
+            {event.category}
+            </Badge>
+            {typeof event.rating === 'number' && (
+            <div className="flex items-center ml-2 sm:ml-0">
+                {[...Array(5)].map((_, i) => (
+                <StarIcon 
+                    key={i} 
+                    className={`w-3.5 h-3.5 ${i < Math.round(event.rating!) ? 'text-yellow-400 dark:text-yellow-500' : 'text-muted-foreground/30'}`} 
+                    fill={i < Math.round(event.rating!) ? 'currentColor' : 'none'} 
+                />
+                ))}
+                <span className="ml-1.5 text-xs text-muted-foreground">({event.rating.toFixed(1)})</span>
+            </div>
             )}
+        </div>
+        <Button 
+            variant="default" 
+            size="sm" 
+            className="w-full sm:w-auto rounded-full bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-1.5 h-auto"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when button is clicked
+              alert(`Registering for ${event.name}`); // Placeholder action
+            }}
         >
-          <Tag className="mr-1 h-3 w-3" />
-          {event.category}
-        </Badge>
-        {typeof event.rating === 'number' && ( // Check if rating is a number
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <StarIcon 
-                key={i} 
-                className={`w-3.5 h-3.5 ${i < Math.round(event.rating!) ? 'text-yellow-400 dark:text-yellow-500' : 'text-muted-foreground/30'}`} 
-                fill={i < Math.round(event.rating!) ? 'currentColor' : 'none'} 
-              />
-            ))}
-            <span className="ml-1.5 text-xs text-muted-foreground">({event.rating.toFixed(1)})</span>
-          </div>
-        )}
+          Register
+        </Button>
       </div>
     </div>
   );

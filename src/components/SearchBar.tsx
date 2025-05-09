@@ -2,9 +2,10 @@
 'use client';
 
 import type { FC, FormEvent } from 'react';
+import { useState }  from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, CheckCircle, RotateCw } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { City } from '@/types'; // Assuming City type is available
+import type { City } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -27,12 +29,12 @@ interface SearchBarProps {
   
   selectedLocationFilter: string | null;
   onLocationFilterChange: (locationId: string | null) => void;
-  availableLocations: City[]; // Using City type for locations for consistency
+  availableLocations: City[]; 
 
   selectedRatingFilter: string | null;
   onRatingFilterChange: (rating: string | null) => void;
 
-  onApplyFilters: () => void; // Renamed from onSearchSubmit for clarity
+  onApplyFilters: () => void; 
   onDetectLocation: () => void;
 }
 
@@ -45,9 +47,9 @@ const dateFilterOptions = [
 
 const ratingFilterOptions = [
   { value: 'all', label: 'Any Rating' },
-  { value: '4+', label: '4+ Stars' },
-  { value: '3+', label: '3+ Stars' },
-  { value: '2+', label: '2+ Stars' },
+  { value: '4', label: '4+ Stars' }, // Value as number string
+  { value: '3', label: '3+ Stars' },
+  { value: '2', label: '2+ Stars' },
 ];
 
 const SearchBar: FC<SearchBarProps> = ({
@@ -67,9 +69,20 @@ const SearchBar: FC<SearchBarProps> = ({
   onDetectLocation,
 }) => {
   
+  const [applyButtonState, setApplyButtonState] = useState<'idle' | 'loading' | 'success'>('idle');
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onApplyFilters();
+    if (applyButtonState === 'loading') return;
+
+    setApplyButtonState('loading');
+    onApplyFilters(); // Call the passed-in filter function
+
+    // Simulate API call or processing
+    setTimeout(() => {
+      setApplyButtonState('success');
+      setTimeout(() => setApplyButtonState('idle'), 1500); // Reset after 1.5s
+    }, 1000); // Simulate 1s loading
   };
 
   return (
@@ -100,7 +113,7 @@ const SearchBar: FC<SearchBarProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <Select value={selectedCategoryFilter || "all"} onValueChange={(val) => onCategoryFilterChange(val === "all" ? null : val)} aria-label="Filter by category">
-          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm">
+          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent className="bg-popover/80 dark:bg-popover/80 backdrop-blur-md">
@@ -110,7 +123,7 @@ const SearchBar: FC<SearchBarProps> = ({
         </Select>
 
         <Select value={selectedDateFilter || "all"} onValueChange={(val) => onDateFilterChange(val === "all" ? null : val)} aria-label="Filter by date">
-          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm">
+          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50">
             <SelectValue placeholder="Date" />
           </SelectTrigger>
           <SelectContent className="bg-popover/80 dark:bg-popover/80 backdrop-blur-md">
@@ -119,7 +132,7 @@ const SearchBar: FC<SearchBarProps> = ({
         </Select>
 
         <Select value={selectedLocationFilter || "all"} onValueChange={(val) => onLocationFilterChange(val === "all" ? null : val)} aria-label="Filter by location">
-          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm">
+          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50">
             <SelectValue placeholder="Location" />
           </SelectTrigger>
           <SelectContent className="bg-popover/80 dark:bg-popover/80 backdrop-blur-md">
@@ -129,7 +142,7 @@ const SearchBar: FC<SearchBarProps> = ({
         </Select>
         
         <Select value={selectedRatingFilter || "all"} onValueChange={(val) => onRatingFilterChange(val === "all" ? null : val)} aria-label="Filter by rating">
-          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm">
+          <SelectTrigger className="rounded-full bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50">
             <SelectValue placeholder="Rating" />
           </SelectTrigger>
           <SelectContent className="bg-popover/80 dark:bg-popover/80 backdrop-blur-md">
@@ -139,10 +152,19 @@ const SearchBar: FC<SearchBarProps> = ({
       </div>
       <Button 
         type="submit" 
-        className="w-full sm:w-auto sm:ml-auto rounded-full h-11 text-base px-8"
+        className={cn(
+            "w-full sm:w-auto sm:ml-auto rounded-full h-11 text-base px-8 transition-all duration-300 ease-in-out",
+            applyButtonState === 'loading' && 'opacity-70 cursor-not-allowed',
+            applyButtonState === 'success' && 'bg-success text-success-foreground animate-pulse-once'
+        )}
         aria-label="Apply all selected filters and search query"
+        disabled={applyButtonState === 'loading'}
       >
-        Apply Filters
+        {applyButtonState === 'loading' && <RotateCw className="mr-2 h-4 w-4 animate-spin" />}
+        {applyButtonState === 'success' && <CheckCircle className="mr-2 h-4 w-4" />}
+        {applyButtonState === 'idle' && 'Apply Filters'}
+        {applyButtonState === 'loading' && 'Applying...'}
+        {applyButtonState === 'success' && 'Applied!'}
       </Button>
     </form>
   );

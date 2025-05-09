@@ -41,6 +41,10 @@ export default {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+        success: { // Added success color for apply button
+          DEFAULT: 'hsl(145 63% 40%)', // ~ Tailwind green-600
+          foreground: 'hsl(0 0% 100%)',
+        },
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -51,7 +55,7 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			sidebar: { // Kept for potential future use, though sidebar removed from current layout
+  			sidebar: { 
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
   				primary: 'hsl(var(--sidebar-primary))',
@@ -63,13 +67,12 @@ export default {
   			}
   		},
   		borderRadius: {
-  			lg: 'var(--radius)', // 12px if --radius is 0.75rem
-  			md: 'calc(var(--radius) - 4px)', // 8px
-  			sm: 'calc(var(--radius) - 6px)', // 6px
-        xl: 'calc(var(--radius) + 4px)', // 16px (0.75rem + 0.25rem) - For 16px rounded elements
-        '2xl': 'calc(var(--radius) + 8px)', // 20px (0.75rem + 0.5rem) - For more rounded elements like cards
-        '3xl': 'calc(var(--radius) + 16px)', // 28px
-        // 'full' is already part of base Tailwind (9999px)
+  			lg: 'var(--radius)', 
+  			md: 'calc(var(--radius) - 4px)', 
+  			sm: 'calc(var(--radius) - 6px)', 
+        xl: 'calc(var(--radius) + 4px)', 
+        '2xl': 'calc(var(--radius) + 8px)',
+        '3xl': 'calc(var(--radius) + 16px)', 
   		},
   		keyframes: {
   			'accordion-down': {
@@ -87,18 +90,23 @@ export default {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+        'pulse-once': { /* Renamed to avoid conflict with Tailwind's pulse */
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+        }
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+        'pulse-once': 'pulse-once 0.5s ease-in-out',
   		},
-      backdropBlur: { // Ensure backdrop blur variants are available
+      backdropBlur: { 
         xs: '2px',
         sm: '4px',
-        md: '12px', // Default md is 12px, mockup was 10px, this is close.
+        md: '12px', 
         lg: '16px',
-        xl: '24px', // Increased from 16px to provide more range
+        xl: '24px',
       }
   	}
   },
