@@ -8,8 +8,8 @@ import { Home, UserCircle, LayoutDashboard, Settings, PlusCircle } from 'lucide-
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { SignedIn, SignedOut, UserButton, useClerk } from '@clerk/nextjs';
-import SettingsPanel from './SettingsPanel'; // Import the SettingsPanel
+import { SignedIn, SignedOut, UserButton, useClerk, useUser } from '@clerk/nextjs';
+import SettingsPanel from './SettingsPanel'; 
 
 interface NavItem {
   href: string;
@@ -25,10 +25,30 @@ const mainNavItems: NavItem[] = [
   { href: '/organizer', label: 'Dashboard', icon: LayoutDashboard, ariaLabel: 'Go to Organizer Dashboard', protected: true },
 ];
 
-const AppHeader: FC = () => {
+// Prop type for AppHeader if it needs to control CreateEventModal on parent
+interface AppHeaderProps {
+  onOpenCreateEventModal?: () => void;
+}
+
+const AppHeader: FC<AppHeaderProps> = ({ onOpenCreateEventModal }) => {
   const pathname = usePathname();
-  const { openSignIn } = useClerk();
+  const { openSignIn, signOut } = useClerk();
+  const { user, isLoaded } = useUser();
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+
+  const handleCreateEventClick = () => {
+    if (user) {
+      if (onOpenCreateEventModal) {
+        onOpenCreateEventModal();
+      } else {
+        // Fallback or direct navigation if prop not provided
+        // For this setup, we assume parent (page.tsx) handles modal state
+        console.warn("onOpenCreateEventModal not provided to AppHeader");
+      }
+    } else {
+      openSignIn({redirectUrl: pathname});
+    }
+  };
 
   return (
     <>
@@ -82,29 +102,18 @@ const AppHeader: FC = () => {
                   }
                 }} 
               />
-              <Button variant="default" size="sm" className="rounded-full px-3 py-1 text-sm shadow-md" asChild>
-                  <Link href="/events/create">
+              <Button variant="default" size="sm" className="rounded-full px-3 py-1 text-sm shadow-md" onClick={handleCreateEventClick}>
                   <PlusCircle className="h-4 w-4 mr-1 sm:mr-1.5" /> Create
-                  </Link>
               </Button>
             </SignedIn>
             <SignedOut>
               <Button 
                   variant="default" 
                   size="sm" 
-                  className="rounded-full px-3 py-1.5 text-sm shadow-md hidden sm:inline-flex" 
-                  onClick={() => openSignIn()}
+                  className="rounded-full px-3 py-1.5 text-sm shadow-md" 
+                  onClick={() => openSignIn({redirectUrl: pathname})}
                 >
                   Sign In / Up
-              </Button>
-              <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="sm:hidden rounded-full w-9 h-9 shadow" 
-                  onClick={() => openSignIn()} 
-                  aria-label="Sign In or Sign Up"
-                >
-                  <UserCircle className="h-5 w-5" />
               </Button>
             </SignedOut>
             
@@ -113,7 +122,7 @@ const AppHeader: FC = () => {
               size="icon" 
               className="rounded-full w-9 h-9 sm:w-10 sm:h-10 shadow-sm" 
               aria-label="Settings"
-              onClick={() => setIsSettingsPanelOpen(true)} // Open the panel
+              onClick={() => setIsSettingsPanelOpen(true)}
             >
               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>

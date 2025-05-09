@@ -4,18 +4,30 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { FC } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { useUser, useClerk } from '@clerk/nextjs';
 import SearchBar from '@/components/SearchBar';
 import EventList from '@/components/EventList';
-import type { Event, City } from '@/types';
+import type { Event, City, Comment } from '@/types';
 import { getFromLocalStorage, saveToLocalStorage } from '@/lib/localStorage';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 import FeaturedEventCarousel from '@/components/FeaturedEventCarousel';
 import CategoryChips from '@/components/CategoryChips';
 import NearbyEventsSection from '@/components/NearbyEventsSection';
 import AppFooter from '@/components/AppFooter';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Removed DialogTrigger as it's not used in this file based on previous context. Re-add if needed.
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Star, Share2, CalendarPlus, XCircle, Send, UserCircle as UserCircleIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const LOCAL_STORAGE_CITY_KEY = 'localPulseSelectedCityKarnataka';
+const PWA_PROMPT_DISMISSED_KEY = 'localPulsePwaPromptDismissed';
 
 const mockCities: City[] = [
   { id: 'bengaluru', name: 'Bengaluru' },
@@ -25,28 +37,142 @@ const mockCities: City[] = [
   { id: 'belagavi', name: 'Belagavi' },
 ];
 
-// This list should ideally be fetched or managed centrally
-export const allMockEvents: Event[] = [
-  // Featured (first 7 are used in carousel by default if not overridden)
-  { id: 'feat1', name: 'Mysuru Dasara Celebrations', description: 'Experience the grandeur of Mysuru Dasara, a 10-day festival showcasing Karnataka\'s rich heritage.', city: 'mysuru', date: '2024-10-03', time: '10:00', location: 'Mysore Palace', category: 'Culture', organizer: 'Karnataka Tourism', imageUrl: 'https://picsum.photos/seed/mysurudasara/1200/400', rating: 4.9, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3898.305678500188!2d76.65298781481616!3d12.300888991292539!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7011c0dc4339%3A0x1ad793a6289a687c!2sMysore%20Palace!5e0!3m2!1sen!2sin!4v1620000000001", registrationLink: "#", comments: [{id: 'c1', userName: 'Ravi K.', rating: 5, text: 'Absolutely breathtaking! A must-see.', date: '2023-10-15T10:00:00Z'}] },
-  { id: 'feat2', name: 'Mangaluru Coastal Food Fest', description: 'Savor authentic coastal cuisine, fresh seafood, and vibrant cultural performances by the beach.', city: 'mangaluru', date: '2025-05-20', time: '12:00', location: 'Panambur Beach', category: 'Food', organizer: 'DK Chefs Guild', imageUrl: 'https://picsum.photos/seed/mangaluru_food_fest/1200/400', rating: 4.7, price: "₹200", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.009231079427!2d74.8017893148167!3d12.906105890852295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba35bb5b5ffffff%3A0x856a191c9e74e976!2sPanambur%20Beach!5e0!3m2!1sen!2sin!4v1620000000002", registrationLink: "#", comments: [] },
-  { id: 'feat3', name: 'Bengaluru Tech Summit 2025', description: 'Asia\'s largest tech event focusing on innovation, startups, and future technologies.', city: 'bengaluru', date: '2025-11-15', time: '09:00', location: 'BIEC', category: 'Tech', organizer: 'Govt. of Karnataka', imageUrl: 'https://picsum.photos/seed/bengaluru_tech_summit/1200/400', rating: 4.8, price: "₹500", ageGroup: "18+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.211868693664!2d77.465441!3d13.062614!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3f1b3e5c9b5d%3A0x4a2b5b8d1e5c9b5d!2sBIEC%2C%20Bengaluru!5e0!3m2!1sen!2sin!4v1620000000003", registrationLink: "#", comments: [{id: 'c2', userName: 'Priya S.', rating: 5, text: 'Great summit, very informative!', date: '2023-11-18T14:30:00Z'}] },
-  { id: 'feat4', name: 'Kannada Folk Music Night', description: 'An enchanting evening of soulful Kannada folk music and traditional dance performances.', city: 'bengaluru', date: '2025-06-05', time: '19:00', location: 'Ravindra Kalakshetra', category: 'Music', organizer: 'Karnataka Arts Council', imageUrl: 'https://picsum.photos/seed/kannada-folk-night/1200/400', rating: 4.8, price: "₹300", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.123456789012!2d77.596789!3d12.971599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sRavindra%20Kalakshetra!5e0!3m2!1sen!2sin!4v1620000000004", registrationLink: "#", comments: [] },
-  { id: 'feat5', name: 'Karnataka State Cricket Tournament', description: 'The thrilling finale of the state\'s premier T20 cricket tournament.', city: 'bengaluru', date: '2025-07-10', time: '18:30', location: 'M. Chinnaswamy Stadium', category: 'Sports', organizer: 'KSCA', imageUrl: 'https://picsum.photos/seed/karnataka-cricket-league/1200/400', rating: 4.3, price: "₹200", ageGroup: "12+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.234567890123!2d77.599789!3d12.978899!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sM.%20Chinnaswamy%20Stadium!5e0!3m2!1sen!2sin!4v1620000000005", registrationLink: "#", comments: [] },
-  { id: 'feat6', name: 'Mysuru Art Exhibition', description: 'Discover works from emerging and established artists from across Karnataka.', city: 'mysuru', date: '2025-08-01', time: '11:00', location: 'Mysuru Art Gallery', category: 'Art', organizer: 'Mysuru Art Society', imageUrl: 'https://picsum.photos/seed/mysuru-art-fair/1200/400', rating: 4.4, price: "₹100", ageGroup: "10+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3899.567890123456!2d76.655789!3d12.305599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7011029b1e3f%3A0x5d2b5b8d1e5c9b5d!2sMysuru%20Art%20Gallery!5e0!3m2!1sen!2sin!4v1620000000006", registrationLink: "#", comments: [] },
-  { id: 'feat7', name: 'Bengaluru Literature Festival', description: 'Celebrate literature with authors, poets, and book lovers in the Garden City.', city: 'bengaluru', date: '2025-09-20', time: '09:00', location: 'Cubbon Park', category: 'Festival', organizer: 'BLF Trust', imageUrl: 'https://picsum.photos/seed/bengaluru-lit-fest/1200/400', rating: 4.6, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.345678901234!2d77.595789!3d12.975599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sCubbon%20Park!5e0!3m2!1sen!2sin!4v1620000000007", registrationLink: "#", comments: [] },
-
-  { id: 'trend1', name: 'Bengaluru Karaga Shaktyotsava', description: 'Witness the ancient tradition of Bengaluru Karaga, a vibrant night-long festival.', city: 'bengaluru', date: '2025-04-15', time: '20:00', location: 'Dharmaraya Swamy Temple', category: 'Festival', organizer: 'Karaga Committee', rating: 4.7, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.456789012345!2d77.590789!3d12.965599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sDharmaraya%20Swamy%20Temple!5e0!3m2!1sen!2sin!4v1620000000008", registrationLink: "#", comments: [] },
-  { id: 'trend2', name: 'Hubballi Startup Conclave', description: 'A platform for North Karnataka startups to connect, learn, and grow.', city: 'hubballi', date: '2025-09-12', time: '10:00', location: 'Deshpande Foundation', category: 'Tech', organizer: 'TiE Hubli', rating: 4.2, price: "₹1000", ageGroup: "18+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3845.037889914095!2d75.11998231484946!3d15.34787898924804!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8d61000000001%3A0x28a1d53a37a0a4b6!2sDeshpande%20Foundation!5e0!3m2!1sen!2sin!4v1620000000009", registrationLink: "#", comments: [] },
-  { id: 'trend3', name: 'Belagavi Kite Festival', description: 'A colourful spectacle as kites of all shapes and sizes fill the skies.', city: 'belagavi', date: '2026-01-14', time: '10:00', location: 'Nanawadi Grounds', category: 'Festival', organizer: 'Belagavi Tourism', rating: 4.1, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3839.016714754712!2d74.5108103148543!3d15.844841989050988!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf675000000001%3A0x6c0b3c7e1e0d6c5c!2sNanawadi%20Grounds!5e0!3m2!1sen!2sin!4v1620000000010", registrationLink: "#", comments: [] },
-  
-  { id: 'more1', name: 'Udupi Yakshagana Performance', description: 'Traditional Yakshagana dance-drama from coastal Karnataka.', city: 'mangaluru', date: '2025-03-10', time: '19:00', location: 'Town Hall Udupi', category: 'Culture', rating: 4.6, price: "₹150", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3884.533882956293!2d74.7478013148193!3d13.34472999071684!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbcbb6000000001%3A0x8f805a9e9e1e7a5e!2sUdupi%20Town%20Hall!5e0!3m2!1sen!2sin!4v1620000000011", registrationLink: "#", comments: [] },
-  { id: 'more2', name: 'Hampi Utsav', description: 'A grand cultural extravaganza amidst the ruins of Hampi.', city: 'hubballi', date: '2025-11-01', time: '17:00', location: 'Hampi (near Hubballi)', category: 'Festival', rating: 4.9, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3848.32850097617!2d76.46070031484665!3d15.32986898936267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8d6d000000001%3A0xb2e2a27e1f1b7a4a!2sHampi!5e0!3m2!1sen!2sin!4v1620000000012", registrationLink: "#", comments: [] },
-  { id: 'more3', name: 'Chitradurga Fort Sound and Light Show', description: 'Experience the history of Chitradurga Fort with a captivating show.', city: 'mysuru', date: '2025-02-20', time: '19:30', location: 'Chitradurga Fort (day trip from Mysuru)', category: 'Culture', rating: 4.3, price: "₹50", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3870.553696626484!2d76.39603631482895!3d14.22355198999465!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbaf10000000001%3A0x8c7c2c1e1c1d6a0a!2sChitradurga%20Fort!5e0!3m2!1sen!2sin!4v1620000000013", registrationLink: "#", comments: [] },
+export let allMockEvents: Event[] = [
+  { id: 'feat1', name: 'Mysuru Dasara Celebrations', description: 'Experience the grandeur of Mysuru Dasara, a 10-day festival showcasing Karnataka\'s rich heritage.', city: 'mysuru', date: '2024-10-03', time: '10:00', location: 'Mysore Palace', category: 'Festival', organizer: 'Karnataka Tourism', imageUrl: 'https://picsum.photos/seed/mysurudasara/1200/400', rating: 4.9, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3898.305678500188!2d76.65298781481616!3d12.300888991292539!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7011c0dc4339%3A0x1ad793a6289a687c!2sMysore%20Palace!5e0!3m2!1sen!2sin!4v1620000000001", registrationLink: "#", comments: [{id: 'c1', userName: 'Ravi K.', userImage: 'https://picsum.photos/seed/ravi/40/40', rating: 5, text: 'Absolutely breathtaking! A must-see.', date: '2023-10-15T10:00:00Z'}], duration: "10 days", accessibilityInfo: "Partially accessible", contactEmail: "info@mysurudasara.gov.in" },
+  { id: 'feat2', name: 'Mangaluru Coastal Food Fest', description: 'Savor authentic coastal cuisine, fresh seafood, and vibrant cultural performances by the beach.', city: 'mangaluru', date: '2025-05-20', time: '12:00', location: 'Panambur Beach', category: 'Food', organizer: 'DK Chefs Guild', imageUrl: 'https://picsum.photos/seed/mangaluru_food_fest/1200/400', rating: 4.7, price: "₹200 entry", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.009231079427!2d74.8017893148167!3d12.906105890852295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba35bb5b5ffffff%3A0x856a191c9e74e976!2sPanambur%20Beach!5e0!3m2!1sen!2sin!4v1620000000002", registrationLink: "#", comments: [], duration: "3 days", accessibilityInfo: "Beach access, limited wheelchair support", contactEmail: "contact@dkchefs.org" },
+  { id: 'feat3', name: 'Bengaluru Tech Summit 2025', description: 'Asia\'s largest tech event focusing on innovation, startups, and future technologies.', city: 'bengaluru', date: '2025-11-15', time: '09:00', location: 'BIEC', category: 'Tech', organizer: 'Govt. of Karnataka', imageUrl: 'https://picsum.photos/seed/bengaluru_tech_summit/1200/400', rating: 4.8, price: "₹500 onwards", ageGroup: "18+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.211868693664!2d77.465441!3d13.062614!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3f1b3e5c9b5d%3A0x4a2b5b8d1e5c9b5d!2sBIEC%2C%20Bengaluru!5e0!3m2!1sen!2sin!4v1620000000003", registrationLink: "#", comments: [{id: 'c2', userName: 'Priya S.', userImage: 'https://picsum.photos/seed/priya/40/40', rating: 5, text: 'Great summit, very informative!', date: '2023-11-18T14:30:00Z'}], duration: "3 days", accessibilityInfo: "Fully wheelchair accessible", contactEmail: "bts@karnataka.gov.in" },
+  { id: 'feat4', name: 'Kannada Folk Music Night', description: 'An enchanting evening of soulful Kannada folk music and traditional dance performances.', city: 'bengaluru', date: '2025-06-05', time: '19:00', location: 'Ravindra Kalakshetra', category: 'Music', organizer: 'Karnataka Arts Council', imageUrl: 'https://picsum.photos/seed/kannada-folk-night/1200/400', rating: 4.8, price: "₹300", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.123456789012!2d77.596789!3d12.971599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sRavindra%20Kalakshetra!5e0!3m2!1sen!2sin!4v1620000000004", registrationLink: "#", comments: [], duration: "3 hours", accessibilityInfo: "Accessible", contactEmail: "info@karnatakaarts.org" },
+  { id: 'feat5', name: 'Karnataka State Cricket Tournament', description: 'The thrilling finale of the state\'s premier T20 cricket tournament.', city: 'bengaluru', date: '2025-07-10', time: '18:30', location: 'M. Chinnaswamy Stadium', category: 'Sports', organizer: 'KSCA', imageUrl: 'https://picsum.photos/seed/karnataka-cricket-league/1200/400', rating: 4.3, price: "₹200 onwards", ageGroup: "12+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.234567890123!2d77.599789!3d12.978899!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sM.%20Chinnaswamy%20Stadium!5e0!3m2!1sen!2sin!4v1620000000005", registrationLink: "#", comments: [], duration: "4 hours", accessibilityInfo: "Wheelchair ramps available", contactEmail: "tickets@ksca.co.in" },
+  { id: 'feat6', name: 'Mysuru Art Exhibition', description: 'Discover works from emerging and established artists from across Karnataka.', city: 'mysuru', date: '2025-08-01', time: '11:00', location: 'Mysuru Art Gallery', category: 'Art', organizer: 'Mysuru Art Society', imageUrl: 'https://picsum.photos/seed/mysuru-art-fair/1200/400', rating: 4.4, price: "₹100", ageGroup: "10+", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3899.567890123456!2d76.655789!3d12.305599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7011029b1e3f%3A0x5d2b5b8d1e5c9b5d!2sMysuru%20Art%20Gallery!5e0!3m2!1sen!2sin!4v1620000000006", registrationLink: "#", comments: [], duration: "Full Day", accessibilityInfo: "Accessible venue", contactEmail: "gallery@mysuruart.org" },
+  { id: 'feat7', name: 'Bengaluru Literature Festival', description: 'Celebrate literature with authors, poets, and book lovers in the Garden City.', city: 'bengaluru', date: '2025-09-20', time: '09:00', location: 'Cubbon Park', category: 'Festival', organizer: 'BLF Trust', imageUrl: 'https://picsum.photos/seed/bengaluru-lit-fest/1200/400', rating: 4.6, price: "Free Entry, Workshops may be paid", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.345678901234!2d77.595789!3d12.975599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sCubbon%20Park!5e0!3m2!1sen!2sin!4v1620000000007", registrationLink: "#", comments: [], duration: "2 days", accessibilityInfo: "Park terrain, some accessible paths", contactEmail: "connect@blflitfest.com" },
+  { id: 'trend1', name: 'Bengaluru Karaga Shaktyotsava', description: 'Witness the ancient tradition of Bengaluru Karaga, a vibrant night-long festival.', city: 'bengaluru', date: '2025-04-15', time: '20:00', location: 'Dharmaraya Swamy Temple', category: 'Festival', organizer: 'Karaga Committee', rating: 4.7, price: "Free", ageGroup: "All Ages", mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.456789012345!2d77.590789!3d12.965599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b4d6b3%3A0x5d2b5b8d1e5c9b5d!2sDharmaraya%20Swamy%20Temple!5e0!3m2!1sen!2sin!4v1620000000008", registrationLink: "#", comments: [], duration: "Overnight", accessibilityInfo: "Crowded, limited accessibility", contactEmail: "karaga@bengaluru.org" },
 ];
 
-
 const allEventCategories = [...new Set(allMockEvents.map(event => event.category))].sort();
+
+
+const CreateEventForm: FC<{ isOpen: boolean; onClose: () => void; onEventCreate: (event: Event) => void; }> = ({ isOpen, onClose, onEventCreate }) => {
+  const [newEvent, setNewEvent] = useState<Partial<Event>>({ city: 'bengaluru', category: 'Music' }); // Default values
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewEvent(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setNewEvent(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEvent.name || !newEvent.date || !newEvent.time || !newEvent.location || !newEvent.description || !newEvent.city || !newEvent.category) {
+      alert("Please fill all required fields: Name, Description, Date, Time, Location, City, Category.");
+      return;
+    }
+    const fullEvent: Event = {
+      id: `evt-${Date.now().toString()}`, 
+      rating: 0, 
+      comments: [], 
+      imageUrl: `https://picsum.photos/seed/event${Date.now()}/400/225`, 
+      ...newEvent
+    } as Event; 
+    onEventCreate(fullEvent);
+    onClose();
+    setNewEvent({ city: 'bengaluru', category: 'Music' }); 
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="glass-effect sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Create New Event</DialogTitle>
+          <DialogDescription>Fill in the details for your new event.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Event Name</Label>
+            <Input id="name" name="name" value={newEvent.name || ''} onChange={handleChange} className="col-span-3" required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">Description</Label>
+            <Textarea id="description" name="description" value={newEvent.description || ''} onChange={handleChange} className="col-span-3" required />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="date" className="text-right">Date</Label>
+            <Input id="date" name="date" type="date" value={newEvent.date || ''} onChange={handleChange} className="col-span-3" required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="time" className="text-right">Time</Label>
+            <Input id="time" name="time" type="time" value={newEvent.time || ''} onChange={handleChange} className="col-span-3" required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="location" className="text-right">Location (Venue)</Label>
+            <Input id="location" name="location" value={newEvent.location || ''} onChange={handleChange} className="col-span-3" required />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="city" className="text-right">City</Label>
+            <Select name="city" value={newEvent.city || 'bengaluru'} onValueChange={(value) => handleSelectChange('city', value)} required>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent>
+                {mockCities.map(city => <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="mapUrl" className="text-right">Google Maps URL</Label>
+            <Input id="mapUrl" name="mapUrl" type="url" value={newEvent.mapUrl || ''} onChange={handleChange} className="col-span-3" placeholder="https://maps.google.com/?q=..." />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="price" className="text-right">Price</Label>
+            <Input id="price" name="price" value={newEvent.price || ''} onChange={handleChange} className="col-span-3" placeholder="e.g., Free, ₹200, or $25" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="ageGroup" className="text-right">Age Group</Label>
+            <Input id="ageGroup" name="ageGroup" value={newEvent.ageGroup || ''} onChange={handleChange} className="col-span-3" placeholder="e.g., All Ages, 18+, Kids Only" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="registrationLink" className="text-right">Registration URL</Label>
+            <Input id="registrationLink" name="registrationLink" type="url" value={newEvent.registrationLink || ''} onChange={handleChange} className="col-span-3" placeholder="https://example.com/register" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">Category</Label>
+             <Select name="category" value={newEvent.category || 'Music'} onValueChange={(value) => handleSelectChange('category', value)} required>
+                <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select category"/>
+                </SelectTrigger>
+                <SelectContent>
+                    {allEventCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+            </Select>
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="organizer" className="text-right">Organizer</Label>
+            <Input id="organizer" name="organizer" value={newEvent.organizer || ''} onChange={handleChange} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="contactEmail" className="text-right">Contact Email</Label>
+            <Input id="contactEmail" name="contactEmail" type="email" value={newEvent.contactEmail || ''} onChange={handleChange} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="duration" className="text-right">Duration</Label>
+            <Input id="duration" name="duration" value={newEvent.duration || ''} onChange={handleChange} className="col-span-3" placeholder="e.g., 2 hours, All day" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="accessibilityInfo" className="text-right">Accessibility</Label>
+            <Input id="accessibilityInfo" name="accessibilityInfo" value={newEvent.accessibilityInfo || ''} onChange={handleChange} className="col-span-3" placeholder="e.g., Wheelchair accessible" />
+          </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+          <Button type="submit">Create Event</Button>
+        </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 
 const Home: FC = () => {
   const router = useRouter();
@@ -60,8 +186,21 @@ const Home: FC = () => {
   const [ratingFilter, setRatingFilter] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [currentReviewRating, setCurrentReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
   
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [eventsData, setEventsData] = useState<Event[]>(allMockEvents); 
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  
+  const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
   const { toast } = useToast();
+
+  const eventDetailsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const storedCity = getFromLocalStorage(LOCAL_STORAGE_CITY_KEY);
@@ -71,7 +210,40 @@ const Home: FC = () => {
       setSelectedCityId(mockCities[0].id);
     }
     setTimeout(() => setIsLoading(false), 700);
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      const dismissed = getFromLocalStorage(PWA_PROMPT_DISMISSED_KEY);
+      if (dismissed !== 'true') { // Check against string 'true'
+        setDeferredPrompt(e);
+        setShowInstallPrompt(true);
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any); // Cast to any to bypass type error for Event
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
   }, []);
+
+  const handleInstallPrompt = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+          saveToLocalStorage(PWA_PROMPT_DISMISSED_KEY, 'true'); 
+        }
+        setShowInstallPrompt(false);
+        setDeferredPrompt(null);
+      });
+    }
+  };
+  
+  const handleDismissInstallPrompt = () => {
+    saveToLocalStorage(PWA_PROMPT_DISMISSED_KEY, 'true'); 
+    setShowInstallPrompt(false);
+    setDeferredPrompt(null);
+  };
 
   const handleCityFilterChange = useCallback((cityId: string | null) => {
     setSelectedCityId(cityId);
@@ -84,7 +256,7 @@ const Home: FC = () => {
 
   const handleCategoryChipSelect = useCallback((category: string | null) => {
     setSelectedCategoryChip(category);
-    setCategoryFilter(category); // Also apply to main filter
+    setCategoryFilter(category); 
   }, []);
 
   const handleApplyFilters = useCallback(() => {
@@ -93,7 +265,7 @@ const Home: FC = () => {
       searchQuery ? `query "${searchQuery}"` : null,
       selectedCityId ? `in ${mockCities.find(c => c.id === selectedCityId)?.name}` : null,
       categoryFilter ? `category ${categoryFilter}` : null,
-      dateFilter ? `date ${dateFilter.replace('_', ' ')}` : null,
+      dateFilter ? `date ${dateFilter?.replace('_', ' ')}` : null,
       ratingFilter ? `rating ${ratingFilter}+ stars` : null,
     ].filter(Boolean).join(', ');
 
@@ -107,16 +279,14 @@ const Home: FC = () => {
 
   const handleDetectLocation = useCallback(() => {
     toast({ title: "Location Detection", description: "Nearby events section will attempt to use your location." });
-    // Logic for NearbyEventsSection will handle actual detection
   }, [toast]);
 
-  const featuredEventsForCarousel = useMemo(() => allMockEvents.slice(0, 7), []);
+  const featuredEventsForCarousel = useMemo(() => eventsData.slice(0, 7), [eventsData]);
 
   const filteredAndSortedEvents = useMemo(() => {
-    let eventsToFilter = allMockEvents;
+    let eventsToFilter = eventsData;
 
     if (searchQuery.trim() !== '') {
-       // For SearchBar, direct filtering is used. Autocomplete suggestions are handled separately in SearchBar.
        eventsToFilter = eventsToFilter.filter(event =>
         event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,17 +328,128 @@ const Home: FC = () => {
       
       return cityMatch && categoryMatch && dateMatches() && ratingMatches();
     });
-  }, [selectedCityId, searchQuery, selectedCategoryChip, categoryFilter, dateFilter, ratingFilter]);
+  }, [selectedCityId, searchQuery, selectedCategoryChip, categoryFilter, dateFilter, ratingFilter, eventsData]);
 
   const trendingEvents = useMemo(() => filteredAndSortedEvents.slice(0, 3), [filteredAndSortedEvents]);
   const moreEvents = useMemo(() => filteredAndSortedEvents.slice(3), [filteredAndSortedEvents]);
 
   const handleEventCardClick = (eventId: string) => {
-    router.push(`/events/${eventId}`);
+    const event = eventsData.find(e => e.id === eventId);
+    setSelectedEvent(event || null);
+    setCurrentReviewRating(0);
+    setReviewText('');
+    setTimeout(() => {
+      eventDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
+  const handleCreateEvent = (newEvent: Event) => {
+    setEventsData(prevEvents => [newEvent, ...prevEvents]);
+    allMockEvents = [newEvent, ...allMockEvents]; 
+    toast({ title: "Event Created!", description: `${newEvent.name} has been added.` });
+  };
 
-  if (isLoading && !searchQuery && !selectedCityId && !categoryFilter && !dateFilter && !ratingFilter) {
+  const handleReviewStarClick = (ratingValue: number) => {
+    setCurrentReviewRating(ratingValue);
+  };
+
+  const handleSubmitReview = () => {
+    if (!user || !selectedEvent) {
+      toast({ title: "Authentication Required", description: "Please sign in to submit a review.", variant: "destructive" });
+      openSignIn();
+      return;
+    }
+    if (!reviewText.trim() || currentReviewRating === 0) {
+      toast({ title: "Missing Information", description: "Please select a rating and write a review.", variant: "destructive" });
+      return;
+    }
+
+    const newReview: Comment = {
+      id: Date.now().toString(),
+      userName: user.firstName || user.fullName || 'Anonymous User',
+      userImage: user.imageUrl,
+      rating: currentReviewRating,
+      text: reviewText,
+      date: new Date().toISOString(),
+    };
+    
+    const updatedEvents = eventsData.map(event => {
+      if (event.id === selectedEvent.id) {
+        const updatedComments = [...(event.comments || []), newReview];
+        return { ...event, comments: updatedComments, rating: calculateNewAverageRating(event.rating, updatedComments) };
+      }
+      return event;
+    });
+    setEventsData(updatedEvents);
+    allMockEvents = updatedEvents; 
+    setSelectedEvent(prev => prev ? {
+        ...prev, 
+        comments: [...(prev.comments || []), newReview], 
+        rating: calculateNewAverageRating(prev.rating, [...(prev.comments || []), newReview])
+      } : null); 
+    
+    setReviewText('');
+    setCurrentReviewRating(0);
+    toast({ title: "Review Submitted", description: "Thank you for your feedback!" });
+  };
+  
+  const calculateNewAverageRating = (currentAvg: number | undefined, comments: Comment[]): number => {
+    if (!comments || comments.length === 0) return currentAvg || 0;
+    const totalRating = comments.reduce((sum, comment) => sum + comment.rating, 0);
+    return parseFloat((totalRating / comments.length).toFixed(1));
+  };
+
+  const handleShareEvent = (event: Event | null) => {
+    if (!event) return;
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/#event-details-section` : `https://your-app-url.com/#event-details-section`; 
+    const shareText = `Check out this event: ${event.name} - ${event.description.substring(0,50)}...`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: event.name,
+        text: shareText,
+        url: shareUrl,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      toast({ title: "Link Copied!", description: "Event link copied to clipboard." });
+    }
+  };
+
+  const handleAddToCalendar = (event: Event | null) => {
+    if (!event) return;
+    const formatGoogleCalendarDate = (dateStr: string, timeStr: string) => {
+        const [year, month, day] = dateStr.split('-');
+        const [hours, minutes] = timeStr.split(':');
+        return `${year}${month}${day}T${hours}${minutes}00`;
+    };
+    
+    const startTime = formatGoogleCalendarDate(event.date, event.time);
+    let endTime = startTime; 
+    if (event.duration) {
+        const eventStartDate = new Date(`${event.date}T${event.time}`);
+        if (event.duration.includes("hour")) {
+            const hours = parseInt(event.duration);
+            if (!isNaN(hours)) {
+                eventStartDate.setHours(eventStartDate.getHours() + hours);
+                endTime = formatGoogleCalendarDate(
+                    eventStartDate.toISOString().split('T')[0], 
+                    eventStartDate.toTimeString().split(' ')[0].substring(0,5)
+                );
+            }
+        } else if (event.duration.toLowerCase() === "all day") {
+             const nextDay = new Date(eventStartDate);
+             nextDay.setDate(eventStartDate.getDate() + 1);
+             endTime = formatGoogleCalendarDate(nextDay.toISOString().split('T')[0], "00:00");
+        }
+    }
+
+    const googleCalendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location + ", " + event.city)}`;
+    window.open(googleCalendarUrl, '_blank');
+    toast({ title: "Add to Calendar", description: "Opening Google Calendar..." });
+  };
+
+  if (isLoading && !selectedEvent && !showCreateEventModal && (!isLoaded || (isLoaded && !user)) ) {
     return (
       <div className="container mx-auto px-2 sm:px-4 py-6 md:py-8 space-y-6 md:space-y-8 max-w-6xl">
         <Skeleton className="h-[250px] md:h-[300px] w-full rounded-2xl glass-effect" />
@@ -184,7 +465,19 @@ const Home: FC = () => {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-6 md:py-8 space-y-6 md:space-y-8 max-w-6xl">
-      
+       {showInstallPrompt && (
+        <div className="glass-effect p-4 rounded-lg mb-6 flex items-center justify-between shadow-lg">
+          <div>
+            <h3 className="font-semibold text-foreground">Install Local Pulse!</h3>
+            <p className="text-sm text-muted-foreground">Get the best event experience on your device.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleInstallPrompt} size="sm" className="bg-primary text-primary-foreground">Install</Button>
+            <Button onClick={handleDismissInstallPrompt} size="sm" variant="ghost">Dismiss</Button>
+          </div>
+        </div>
+      )}
+
       <FeaturedEventCarousel events={featuredEventsForCarousel} onEventClick={handleEventCardClick}/>
       
       <section aria-labelledby="search-events-heading">
@@ -206,7 +499,7 @@ const Home: FC = () => {
           onRatingFilterChange={setRatingFilter}
           onApplyFilters={handleApplyFilters}
           onDetectLocation={handleDetectLocation}
-          allEvents={allMockEvents}
+          allEvents={eventsData}
         />
       </section>
 
@@ -233,6 +526,141 @@ const Home: FC = () => {
           <EventList events={moreEvents} isLoading={isLoading} onEventClick={handleEventCardClick} />
         </section>
       )}
+      
+      {selectedEvent && (
+        <section ref={eventDetailsRef} id="event-details-section" className="mt-8 pt-6 border-t border-border/30">
+          <div className="glass-effect p-6 rounded-2xl shadow-xl">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-primary">{selectedEvent.name}</h2>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedEvent(null)} aria-label="Close event details">
+                <XCircle className="h-6 w-6 text-muted-foreground" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                {selectedEvent.imageUrl && (
+                  <Image
+                    src={selectedEvent.imageUrl}
+                    alt={selectedEvent.name}
+                    width={600}
+                    height={300}
+                    className="w-full h-auto max-h-72 object-cover rounded-xl mb-4 shadow-md"
+                    data-ai-hint={`${selectedEvent.category || 'event'} ${selectedEvent.city || 'city'}`}
+                  />
+                )}
+                <h3 className="text-lg font-semibold mb-1">About this Event</h3>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{selectedEvent.description}</p>
+                
+                <h3 className="text-lg font-semibold mb-1">Details</h3>
+                <ul className="space-y-1 text-sm text-muted-foreground mb-4">
+                  <li><strong>Date & Time:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at {selectedEvent.time}</li>
+                  {selectedEvent.duration && <li><strong>Duration:</strong> {selectedEvent.duration}</li>}
+                  <li><strong>Venue:</strong> {selectedEvent.location}, {selectedEvent.city}</li>
+                  <li><strong>Category:</strong> <Badge variant="secondary">{selectedEvent.category}</Badge></li>
+                  {selectedEvent.organizer && <li><strong>Organizer:</strong> {selectedEvent.organizer}</li>}
+                  {selectedEvent.price && <li><strong>Price:</strong> {selectedEvent.price}</li>}
+                  {selectedEvent.ageGroup && <li><strong>Age Group:</strong> {selectedEvent.ageGroup}</li>}
+                  {selectedEvent.accessibilityInfo && <li><strong>Accessibility:</strong> {selectedEvent.accessibilityInfo}</li>}
+                  {selectedEvent.contactEmail && <li><strong>Contact:</strong> <a href={`mailto:${selectedEvent.contactEmail}`} className="text-primary hover:underline">{selectedEvent.contactEmail}</a></li>}
+                </ul>
+
+                 {selectedEvent.registrationLink && selectedEvent.registrationLink !== "#" && (
+                  <Button asChild className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-2 transition-transform hover:scale-105 mr-2">
+                    <a href={selectedEvent.registrationLink} target="_blank" rel="noopener noreferrer">Register Now</a>
+                  </Button>
+                )}
+                 <Button onClick={() => handleShareEvent(selectedEvent)} variant="outline" className="rounded-full mr-2">
+                  <Share2 className="h-4 w-4 mr-2"/> Share Event
+                </Button>
+                <Button onClick={() => handleAddToCalendar(selectedEvent)} variant="outline" className="rounded-full">
+                  <CalendarPlus className="h-4 w-4 mr-2"/> Add to Calendar
+                </Button>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Location Map</h3>
+                {selectedEvent.mapUrl && selectedEvent.mapUrl !== "#" ? (
+                  <iframe
+                    src={selectedEvent.mapUrl}
+                    width="100%"
+                    height="300"
+                    className="border-0 rounded-xl shadow-md mb-6"
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`Map for ${selectedEvent.name}`}
+                  ></iframe>
+                ) : <p className="text-sm text-muted-foreground mb-6">Map data not available.</p>}
+              </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-6 pt-6 border-t border-border/30">
+              <h3 className="text-xl font-semibold mb-3">Reviews & Ratings</h3>
+              {!user && isLoaded ? (
+                <div className="text-center p-4 glass-effect rounded-xl">
+                  <p className="text-muted-foreground mb-3">Please sign in to write a review or see all reviews.</p>
+                  <Button onClick={() => openSignIn({ redirectUrl: typeof window !== 'undefined' ? window.location.pathname : '/' })} className="rounded-full">Sign In to Review</Button>
+                </div>
+              ) : user ? (
+                <div className="mb-6">
+                  <h4 className="text-md font-semibold mb-2">Write a Review</h4>
+                  <div className="flex space-x-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => handleReviewStarClick(star)}
+                        aria-label={`Rate ${star} stars`}
+                        className={`p-1 rounded-full transition-colors ${currentReviewRating >= star ? 'text-yellow-400 dark:text-yellow-500' : 'text-muted-foreground/50 hover:text-yellow-400/70'}`}
+                      >
+                        <Star fill={currentReviewRating >= star ? 'currentColor' : 'none'} className="w-7 h-7" />
+                      </button>
+                    ))}
+                  </div>
+                  <Textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="Share your experience..."
+                    className="w-full p-3 rounded-lg border-border bg-input shadow-sm focus:border-primary focus:ring-primary sm:text-sm mb-2"
+                    rows={3}
+                  />
+                  <Button onClick={handleSubmitReview} className="rounded-full">
+                    <Send className="h-4 w-4 mr-2" /> Submit Review
+                  </Button>
+                </div>
+              ) : <Skeleton className="h-24 w-full rounded-lg glass-effect" />}
+              
+              <div className="space-y-4">
+                {selectedEvent.comments && selectedEvent.comments.length > 0 ? (
+                  selectedEvent.comments.map((comment) => (
+                    <div key={comment.id} className="glass-effect p-4 rounded-lg shadow">
+                      <div className="flex items-center mb-1">
+                        {comment.userImage ? 
+                           <Image src={comment.userImage} alt={comment.userName} data-ai-hint="profile avatar" width={32} height={32} className="w-8 h-8 rounded-full mr-2"/>
+                           : <UserCircleIcon className="w-8 h-8 text-muted-foreground mr-2"/>
+                        }
+                        <div>
+                            <p className="font-semibold text-foreground text-sm">{comment.userName}</p>
+                            <p className="text-xs text-muted-foreground">{new Date(comment.date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                       <div className="flex items-center my-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`w-4 h-4 ${i < comment.rating ? 'text-yellow-400 dark:text-yellow-500' : 'text-muted-foreground/30'}`} fill={i < comment.rating ? 'currentColor' : 'none'} />
+                          ))}
+                        </div>
+                      <p className="text-sm text-muted-foreground">{comment.text}</p>
+                    </div>
+                  ))
+                ) : (
+                   user && <p className="text-muted-foreground text-sm">No reviews yet. Be the first one!</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {!isLoading && filteredAndSortedEvents.length === 0 && (searchQuery || selectedCityId || categoryFilter || dateFilter || ratingFilter) && (
          <div className="text-center py-10 glass-effect rounded-2xl">
@@ -242,9 +670,16 @@ const Home: FC = () => {
       )}
       
       <NearbyEventsSection onEventClick={handleEventCardClick} />
+      <CreateEventForm 
+        isOpen={showCreateEventModal} 
+        onClose={() => setShowCreateEventModal(false)} 
+        onEventCreate={handleCreateEvent} 
+      />
       <AppFooter />
     </div>
   );
 };
 
 export default Home;
+
+    

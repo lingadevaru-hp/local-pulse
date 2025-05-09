@@ -2,10 +2,10 @@
 {
   "name": "Local Pulse",
   "short_name": "LocalPulse",
-  "description": "Discover local events in Karnataka with Local Pulse",
+  "description": "Discover and manage events in Karnataka",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#f3f4f6",
   "theme_color": "#007AFF",
   "orientation": "portrait-primary",
   "icons": [

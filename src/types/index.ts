@@ -25,6 +25,9 @@ export interface Event {
   mapUrl?: string; 
   registrationLink?: string;
   comments?: Comment[];
+  duration?: string; // e.g., "2 hours", "All day"
+  accessibilityInfo?: string; // e.g., "Wheelchair accessible"
+  contactEmail?: string; // e.g., "info@example.com"
 }
 
 export interface City {
