@@ -17,9 +17,11 @@ const CategoryChips: FC<CategoryChipsProps> = ({ categories, selectedCategory, o
 
   return (
     <section aria-labelledby="category-filter-heading" className="mb-6 md:mb-8">
-      <h3 id="category-filter-heading" className="sr-only">Filter by Category</h3>
-      <ScrollArea className="w-full whitespace-nowrap rounded-lg">
-        <div className="flex space-x-2 pb-2.5">
+      <h2 id="category-filter-heading" className="text-lg font-semibold mb-3">
+        Browse by Category
+      </h2>
+      <ScrollArea className="w-full whitespace-nowrap pb-1">
+        <div className="flex space-x-2">
           {allCategories.map((category, index) => (
             <Button
               key={index}
@@ -27,16 +29,18 @@ const CategoryChips: FC<CategoryChipsProps> = ({ categories, selectedCategory, o
               size="sm"
               onClick={() => onCategorySelect(category)}
               className={cn(
-                "rounded-full px-4 py-2 h-auto text-sm transition-all duration-200 ease-in-out",
-                "bg-background/70 dark:bg-black/30 backdrop-blur-sm border-border/50 hover:bg-accent/70 dark:hover:bg-accent/50",
-                selectedCategory === category && "bg-primary text-primary-foreground border-primary hover:bg-primary/90 dark:hover:bg-primary/90"
+                "rounded-full px-4 py-1.5 h-auto text-sm font-medium transition-all duration-200 ease-in-out glass-effect", // Added glass-effect
+                selectedCategory === category 
+                  ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                  : "border-border/50 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20"
               )}
+              aria-pressed={selectedCategory === category}
             >
               {category === null ? 'All Events' : category}
             </Button>
           ))}
         </div>
-        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="horizontal" className="mt-2"/>
       </ScrollArea>
     </section>
   );

@@ -1,8 +1,8 @@
 
 {
-  "name": "Vibrate Menux",
-  "short_name": "VibrateMenux",
-  "description": "Discover local events with Vibrate Menux",
+  "name": "Local Pulse",
+  "short_name": "LocalPulse",
+  "description": "Discover local events in Karnataka with Local Pulse",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

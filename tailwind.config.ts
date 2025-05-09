@@ -51,7 +51,7 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			sidebar: {
+  			sidebar: { // Kept for potential future use, though sidebar removed from current layout
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
   				primary: 'hsl(var(--sidebar-primary))',
@@ -63,12 +63,13 @@ export default {
   			}
   		},
   		borderRadius: {
-  			lg: 'var(--radius)', // e.g., 12px if --radius is 0.75rem
-  			md: 'calc(var(--radius) - 4px)', // e.g., 8px
-  			sm: 'calc(var(--radius) - 6px)', // e.g., 6px
-        xl: 'calc(var(--radius) + 4px)', // e.g., 16px if --radius is 0.75rem (12px)
-        '2xl': 'calc(var(--radius) + 8px)', // e.g., 20px if --radius is 0.75rem (12px) -> use rounded-[16px] for specific 16px
-        '3xl': 'calc(var(--radius) + 16px)', // e.g. 28px
+  			lg: 'var(--radius)', // 12px if --radius is 0.75rem
+  			md: 'calc(var(--radius) - 4px)', // 8px
+  			sm: 'calc(var(--radius) - 6px)', // 6px
+        xl: 'calc(var(--radius) + 4px)', // 16px (0.75rem + 0.25rem) - For 16px rounded elements
+        '2xl': 'calc(var(--radius) + 8px)', // 20px (0.75rem + 0.5rem) - For more rounded elements like cards
+        '3xl': 'calc(var(--radius) + 16px)', // 28px
+        // 'full' is already part of base Tailwind (9999px)
   		},
   		keyframes: {
   			'accordion-down': {
@@ -95,12 +96,11 @@ export default {
       backdropBlur: { // Ensure backdrop blur variants are available
         xs: '2px',
         sm: '4px',
-        md: '8px',
-        lg: '12px',
-        xl: '16px',
+        md: '12px', // Default md is 12px, mockup was 10px, this is close.
+        lg: '16px',
+        xl: '24px', // Increased from 16px to provide more range
       }
   	}
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-

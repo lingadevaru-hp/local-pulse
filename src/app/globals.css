@@ -14,7 +14,7 @@ body {
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 210 100% 50%; /* Apple Blue #007AFF, slightly adjusted for vibrancy */
+    --primary: 210 100% 50%; /* Apple Blue #007AFF */
     --primary-foreground: 0 0% 100%; /* White text on primary */
     --secondary: 210 20% 94%; /* Lighter grey for secondary elements */
     --secondary-foreground: 240 10% 3.9%;
@@ -32,13 +32,13 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.75rem; /* Increased default radius for more rounded elements e.g. 12px, can use 1rem for 16px */
+    --radius: 0.75rem; /* Base radius (12px) */
 
-    /* Glassmorphism specific properties */
-    --glass-bg-light: hsla(0, 0%, 100%, 0.6); /* Light mode glass background */
-    --glass-bg-dark: hsla(220, 15%, 15%, 0.6); /* Dark mode glass background */
-    --glass-border-light: hsla(0, 0%, 100%, 0.3);
-    --glass-border-dark: hsla(220, 15%, 25%, 0.3);
+    /* Glassmorphism specific properties - adjusted for subtler effect */
+    --glass-bg-light: hsla(0, 0%, 100%, 0.15); /* Subtler white for light mode glass */
+    --glass-border-light: hsla(0, 0%, 100%, 0.2);
+    --glass-bg-dark: hsla(220, 15%, 10%, 0.25); /* Subtler dark for dark mode glass */
+    --glass-border-dark: hsla(220, 15%, 25%, 0.15);
   }
 
   .dark {
@@ -80,33 +80,24 @@ body {
   }
 }
 
-/* Custom utility for backdrop blur if needed, though Tailwind supports backdrop-blur */
+/* Custom utility for backdrop blur */
 .backdrop-blur-10 {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-.backdrop-blur-16 {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
+/* Shadcn already provides backdrop-blur-md, but if specific 10px is needed */
 
 /* Glassmorphic card style utility */
-.glass-card {
-  @apply bg-card/60 dark:bg-card/40 backdrop-blur-md border border-white/30 dark:border-zinc-700/30 shadow-xl;
-  /* Ensure background color is using HSL variables if possible, or a suitable opacity */
-  /* Example: bg-[hsl(var(--card))]/60 dark:bg-[hsl(var(--card))]/40 */
-}
-/* More refined glass card styling */
-.glass-card {
+/* This class will apply the themed glass effect */
+.glass-effect {
     background-color: var(--glass-bg-light);
     border: 1px solid var(--glass-border-light);
-    @apply backdrop-blur-md shadow-xl rounded-2xl; /* Ensure rounded corners from design */
+    @apply backdrop-blur-md shadow-lg; /* Using backdrop-blur-md (12px) as it's close to 10px */
 }
-.dark .glass-card {
+.dark .glass-effect {
     background-color: var(--glass-bg-dark);
     border: 1px solid var(--glass-border-dark);
 }
-
 
 /* Custom scrollbar styling (optional, for a more polished look) */
 ::-webkit-scrollbar {
