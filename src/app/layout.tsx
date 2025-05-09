@@ -19,8 +19,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' }, // Updated to use HSL var
-    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },  // Updated to use HSL var
+    { media: '(prefers-color-scheme: light)', color: 'hsl(var(--background))' }, 
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(var(--background))' },  
   ],
   width: 'device-width',
   initialScale: 1,
@@ -35,9 +35,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{
-      // Let Clerk auto-detect theme based on system/ThemeProvider
-      // baseTheme: undefined, // Default behavior
+    <ClerkProvider 
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={{
       variables: { 
         colorPrimary: 'hsl(var(--primary))',
         colorBackground: 'hsl(var(--background))',
@@ -57,7 +57,7 @@ export default function RootLayout({
           >
             <div className="min-h-screen flex flex-col">
               <AppHeader />
-              <main className="flex-grow pt-20"> {/* Added pt-20 for fixed header */}
+              <main className="flex-grow pt-20"> 
                 {children}
               </main>
             </div>
