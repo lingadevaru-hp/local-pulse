@@ -10,13 +10,14 @@ import { Ghost } from 'lucide-react';
 interface EventListProps {
   events: Event[];
   isLoading: boolean;
+  onEventClick?: (eventId: string) => void;
 }
 
-const EventList: FC<EventListProps> = ({ events, isLoading }) => {
+const EventList: FC<EventListProps> = ({ events, isLoading, onEventClick }) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {[...Array(3)].map((_, index) => ( // Show 3 skeletons to match requested 3 events
+        {[...Array(3)].map((_, index) => (
           <CardSkeleton key={index} />
         ))}
       </div>
@@ -37,7 +38,7 @@ const EventList: FC<EventListProps> = ({ events, isLoading }) => {
     <section aria-label="Event results">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {events.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard key={event.id} event={event} onClick={onEventClick} />
         ))}
       </div>
     </section>
@@ -65,4 +66,3 @@ const CardSkeleton: FC = () => (
 
 
 export default EventList;
-

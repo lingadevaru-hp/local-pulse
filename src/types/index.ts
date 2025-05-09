@@ -1,16 +1,31 @@
 
+
+export interface Comment {
+  id: string;
+  userName: string;
+  userImage?: string;
+  rating: number;
+  text: string;
+  date: string; // ISO date string
+}
+
 export interface Event {
   id: string;
   name: string;
   description: string;
-  city: string; // city id, maps to City type
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM
-  location: string; // Venue name or address
+  city: string; 
+  date: string; 
+  time: string; 
+  location: string; 
   category: string;
   imageUrl?: string;
   rating?: number;
-  organizer?: string; // Made optional as some mock data might not have it
+  organizer?: string;
+  price?: string; // e.g., "Free", "₹500", "₹200-₹1000"
+  ageGroup?: string; // e.g., "All Ages", "18+", "21 and Above"
+  mapUrl?: string; // Google Maps embed URL
+  registrationLink?: string; // Link to registration page
+  comments?: Comment[]; // Array of comments
 }
 
 export interface City {

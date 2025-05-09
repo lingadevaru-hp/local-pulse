@@ -5,13 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import type { Event } from '@/types';
 import { CalendarDays, MapPin, Tag, UserCircle, Star as StarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'; // Import Button
+import { Button } from '@/components/ui/button';
 
 interface EventCardProps {
   event: Event;
+  onClick?: (eventId: string) => void; // Optional: For handling click at parent level
 }
 
-const EventCard: FC<EventCardProps> = ({ event }) => {
+const EventCard: FC<EventCardProps> = ({ event, onClick }) => {
   let aiHint = `${event.category || 'event'} placeholder`;
   if (event.name.toLowerCase().includes('mysuru dasara')) aiHint = "mysore palace";
   else if (event.name.toLowerCase().includes('karaga')) aiHint = "karaga festival";
@@ -22,13 +23,24 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
   else if (event.name.toLowerCase().includes('art exhibition')) aiHint = "art gallery";
   else if (event.name.toLowerCase().includes('literature festival')) aiHint = "books festival";
 
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(event.id);
+    }
+  };
 
   return (
-    <div className={cn(
-      "group rounded-2xl overflow-hidden transition-all duration-300 ease-in-out",
-      "glass-effect", 
-      "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col" // ensure flex column for button at bottom
-    )}>
+    <div 
+      className={cn(
+        "group rounded-2xl overflow-hidden transition-all duration-300 ease-in-out",
+        "glass-effect", 
+        "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex flex-col"
+      )}
+      onClick={handleCardClick} // Added onClick to the main div
+      role="button" // Added role for accessibility
+      tabIndex={0} // Make it focusable
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }} // Keyboard accessibility
+    >
       <div className="relative w-full aspect-[16/9] overflow-hidden">
         <Image
           src={event.imageUrl || `https://picsum.photos/seed/${event.id}/400/225`}
@@ -40,7 +52,7 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
           data-ai-hint={aiHint}
         />
       </div>
-      <div className="p-4 space-y-2 flex-grow"> {/* flex-grow to push footer down */}
+      <div className="p-4 space-y-2 flex-grow">
         <h3 className="text-md md:text-lg font-semibold leading-tight text-foreground truncate" title={event.name}>
           {event.name}
         </h3>
@@ -95,8 +107,9 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
             size="sm" 
             className="w-full sm:w-auto rounded-full bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-1.5 h-auto"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when button is clicked
-              alert(`Registering for ${event.name}`); // Placeholder action
+              e.stopPropagation(); 
+              // Placeholder action for direct registration, or could open details too
+              if (onClick) onClick(event.id); else alert(`Registering for ${event.name}`); 
             }}
         >
           Register
