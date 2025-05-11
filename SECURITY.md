@@ -35,7 +35,7 @@ If you discover a security vulnerability in Event Finder Web App, please help us
 - We will investigate and keep you updated on the progress.
 - Once resolved, we will credit you (if you wish) and release a fix as soon as possible.
 
----
+--------------------------------------------------------------------------------------------------------------------
 
 **Contributors:**
 - **darshannaik484** — Improved the security policy and documentation for this project. 
