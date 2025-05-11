@@ -23,7 +23,7 @@ If you discover a security vulnerability in Event Finder Web App, please help us
 
 1. **Do not open a public issue.**
 2. **Contact us directly:**
-   Email: [your-email@example.com]  
+   Email: [Contact@lingadevaruin]  
    (Replace this with the actual contact email address.)
 3. **Provide as much detail as possible:**
    - Description of the vulnerability
@@ -31,7 +31,7 @@ If you discover a security vulnerability in Event Finder Web App, please help us
    - Any relevant logs or screenshots
 
 **What happens next?**
-- We will acknowledge your report within 2 business days.
+- We will acknowledge your report within 2  days.
 - We will investigate and keep you updated on the progress.
 - Once resolved, we will credit you (if you wish) and release a fix as soon as possible.
 
