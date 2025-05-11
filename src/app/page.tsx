@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -493,7 +492,7 @@ const Home: FC = () => {
         ...prevSelected, 
         comments: [...(prevSelected.comments || []), newReview], 
         rating: calculateNewAverageRating(prevSelected.rating, [...(prevSelected.comments || []), newReview])
-      } : null); 
+      } : null);
     
     setReviewText('');
     setCurrentReviewRating(0);
