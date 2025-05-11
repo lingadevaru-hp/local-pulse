@@ -19,3 +19,7 @@ To download and run this web app locally, follow these steps:
 
 
 To get started, take a look at src/app/page.tsx.
+
+## Contributors
+
+- **darshannaik484** - Fixed the review button issue, ensuring reviews display correctly after submission.
